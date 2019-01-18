@@ -1,0 +1,17 @@
+{
+  "settings": {
+    "root_folder" : "./src",
+    "folders_to_ignore": [
+      "_vendors",
+      "_packages"
+    ],
+    "elements_to_alter": [
+      "input",
+      "select",
+      "textarea"
+    ],
+    "elements_to_ignore": [
+      "type='submit'"
+    ]
+  }
+}
