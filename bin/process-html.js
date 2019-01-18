@@ -5,6 +5,9 @@ const { readFile, readFileSync } = require("fs-extra");
 const { extname } = require("path");
 const { walk } = require("walk");
 
+const chalk = require("chalk");
+const newLine = "\n";
+
 // Get all relevant settings
 const config = require('../config/settings.json');
 const rootfolder = config.settings.root_folder; 
@@ -33,9 +36,7 @@ walker.on("file", function(root, stat, next) {
     if (ext === ".html" || ext === ".shtml") {
       if (containsPii(contents)) {
         filesToFix.push(root + "/" + stat.name);
-        console.error(
-          "\x1b[31m" + root + "/" + stat.name + " | found: " + count(contents) + " matches\x1b[37m"
-        );
+        console.log(chalk.red(root + "/" + stat.name + " | found: " + count(contents) + " matches"));
         nrOfMatches = nrOfMatches + count(contents);
       }
     }
@@ -48,13 +49,12 @@ walker.on("end", function() {
   // TODO: delete timeout
   setTimeout(function(){ 
     if (filesToFix.lenght != 0) {
-      console.log("\n\x1b[0mNumber of files to fix: ", filesToFix.length);
-      console.log("Number of matches in total: ", nrOfMatches + "\n");
-      console.log("Search complete.");
+      console.log("%sNumber of files to fix: %s", newLine, filesToFix.length);
+      console.log("Number of matches in total: %s %s", nrOfMatches, newLine);
+      console.log("Search complete.%s", newLine);
     } else {
-      console.log(
-        "\n\x1b[0mSearch complete.\n\nCongratulations! No unmarked pii-sensitive data is found!"
-      );
+      console.log("%sSearch complete.", newLine);
+      console.log("%sCongratulations! No unmarked pii-sensitive data is found!", newLine);
     }
    }, 300);
   
@@ -64,17 +64,16 @@ walker.on("end", function() {
     filesToFix.forEach((file, index) => {
       addPiiMask(file); // comment this out to only use the scan-part
       if (index + 1 === filesToFix.length) {
-        console.log("\n\x1b[32m" + "Adding pii-mask completed.\n");
+        console.log(chalk.green(newLine + "Adding pii-mask completed." + newLine));
         console.log(
-          "\x1b[37m[data-pii-mask]-attribute added to \x1b[36m" +
-            nrOfMatches +
-            "\x1b[37m elements in \x1b[36m" +
-            filesToFix.length +
-            "\x1b[37m files."
+          "Attribute(s) added to " + 
+          chalk.cyan(nrOfMatches) + 
+          " elements in " + 
+          chalk.cyan(filesToFix.length) + 
+          " files."
         );
-        console.log(
-          "All matches should now have the 'data-pii-mask' attribute.\n\nrun \x1b[36m'node ./bin/process-pii.js' \x1b[37magain to confirm.."
-        );
+        console.log("All matches should now have the specified attribute(s).");
+        console.log(newLine + "run " + chalk.cyan("node ./bin/process-pii.js") + " again to confirm.");
       }
     });
   }
@@ -138,5 +137,5 @@ function addPiiMask(filepath) {
     }
   });
   // fs.writeFileSync(filepath, src);
-  console.log("\x1b[37m" + filepath, "\x1b[32mfixed.");
+  console.log(filepath + chalk.green(" fixed."));
 }
